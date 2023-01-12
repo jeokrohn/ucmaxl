@@ -5,4 +5,4 @@ Collection of helpers used in multiple projects
 
 To install:
 
- pipenv install -e git+https://github.com/jeokrohn/ucmaxl@main#ucmaxl
+ pipenv install -e git+https://github.com/jeokrohn/ucmaxl@main#egg=ucmaxl
