@@ -132,12 +132,36 @@ class AXLHelper:
         :param query: SQL query
         :return: list of dict; each dict representing one record
         """
-        r = self.service.executeSQLQuery(sql=query)
+        try:
+            r = self.service.executeSQLQuery(sql=query)
 
-        if r['return'] is None:
-            return []
+            if r['return'] is None:
+                return []
 
-        return [{t.tag: t.text for t in row} for row in r['return']['row']]
+            return [{t.tag: t.text for t in row} for row in r['return']['row']]
+        except zeep.exceptions.Fault as e:
+            # check if we need to restrict the query to smaller sets
+            # Error to look for is something like:
+            # Query request too large. Total rows matched: <Matched Rows>. Suggested row fetch: less than <Rows>
+            message = e.message
+            if (m := re.match(r'Query request too large\..+matched: (\d+).+less than (\d+)', message)):
+                total_rows = int(m.group(1))
+                batch_size = int(m.group(2))
+                # reduce site (safety)
+                batch_size = int(batch_size * 0.7)
+                log.debug(f'executeSQLQuery returns to many rows, need to request batches: {message}')
+                result = []
+                # cut of "select"
+                query = query[6:]
+                result = []
+                for skip in range(0, total_rows, batch_size):
+                    batch_query = f'select skip {skip} first {batch_size}{query}'
+                    batch = self.sql_query(batch_query)
+                    result.extend(batch)
+                return result
+            else:
+                # for other errors re-raise the exception
+                raise
 
     def sql_update(self, sql):
         """
