@@ -101,7 +101,7 @@ class AXLHelper:
         :return: UCM version
         """
         # try for a number of UCM versions
-        for major_version in [14, 12, 11, 10, 9, 8]:
+        for major_version in [15, 14, 12, 11, 10, 9, 8]:
             soap_envelope = (f'<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" '
                              f'xmlns:ns="http://www.cisco.com/AXL/API/{major_version}.0"><soapenv:Header/>'
                              f'<soapenv:Body><ns:getCCMVersion></ns:getCCMVersion></soapenv:Body></soapenv:Envelope>')
